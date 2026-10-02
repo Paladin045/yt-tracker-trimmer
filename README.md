@@ -1,108 +1,155 @@
-# Getting Started app for Discord
+# YT Tracker Trimmer
 
-This project contains a basic rock-paper-scissors-style Discord app written in JavaScript, built for the [getting started guide](https://discord.com/developers/docs/getting-started).
+A lightweight Discord bot that detects YouTube links containing the `si` sharing/tracking parameter and replies with a cleaned version of the URL.
 
-![Demo of app](https://github.com/discord/discord-example-app/raw/main/assets/getting-started-demo.gif?raw=true)
+Rather than deleting or modifying users' messages, YT Tracker Trimmer leaves the original message intact and provides a cleaned link in a reply, along with a polite reminder to remove unnecessary tracking/share parameters when possible.
 
-## Project structure
-Below is a basic overview of the project structure:
+## Example
 
-```
-├── examples    -> short, feature-specific sample apps
-│   ├── app.js  -> finished app.js code
-│   ├── button.js
-│   ├── command.js
-│   ├── modal.js
-│   ├── selectMenu.js
-├── .env.sample -> sample .env file
-├── app.js      -> main entrypoint for app
-├── commands.js -> slash command payloads + helpers
-├── game.js     -> logic specific to RPS
-├── utils.js    -> utility functions and enums
-├── package.json
-├── README.md
-└── .gitignore
+When a user posts:
+
+```text
+https://youtu.be/dQw4w9WgXcQ?si=ExampleTrackingParameter
 ```
 
-## Running app locally
+YT Tracker Trimmer replies with:
 
-Before you start, you'll need to install [NodeJS](https://nodejs.org/en/download/) and [create a Discord app](https://discord.com/developers/applications) with the proper permissions:
-- `applications.commands`
-- `bot` (with Send Messages enabled)
+```text
+🧹 Cleaned YouTube link:
+https://youtu.be/dQw4w9WgXcQ
 
-
-Configuring the app is covered in detail in the [getting started guide](https://discord.com/developers/docs/getting-started).
-
-### Setup project
-
-First clone the project:
-```
-git clone https://github.com/discord/discord-example-app.git
+Please remove unnecessary tracking/share parameters from links when possible.
 ```
 
-Then navigate to its directory and install dependencies:
+Other useful YouTube query parameters are preserved. For example:
+
+```text
+https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42s&si=ExampleTrackingParameter
 ```
-cd discord-example-app
+
+is cleaned to:
+
+```text
+https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42s
+```
+
+Links that do not contain an `si` parameter are ignored.
+
+## Features
+
+- Detects YouTube and `youtu.be` links in ordinary Discord messages.
+- Removes the `si` query parameter.
+- Preserves other URL parameters, such as timestamps and playlist information.
+- Supports multiple tracked YouTube links in a single message.
+- Replies directly to the original message without pinging its author.
+- Does not delete, edit, or otherwise modify user messages.
+- Ignores messages from bots.
+- Requires no database or persistent storage.
+- Requires no moderation or administrative permissions.
+
+## Requirements
+
+- Node.js 18 or newer
+- A Discord application with a bot user
+- `discord.js`
+- `dotenv`
+
+The Discord bot requires the following Gateway intents:
+
+- Guilds
+- Guild Messages
+- Message Content
+
+**Message Content Intent must also be enabled under Privileged Gateway Intents in the Discord Developer Portal.**
+
+The bot requires the following server/channel permissions:
+
+- View Channels
+- Send Messages
+- Read Message History
+
+Additional moderation or administrative permissions are not required.
+
+## Installation
+
+Clone the repository and install its dependencies:
+
+```bash
+git clone <repository-url>
+cd yt-tracker-trimmer
 npm install
 ```
-### Get app credentials
 
-Fetch the credentials from your app's settings and add them to a `.env` file (see `.env.sample` for an example). You'll need your app ID (`APP_ID`), bot token (`DISCORD_TOKEN`), and public key (`PUBLIC_KEY`).
+Copy `.env.example` to `.env` and populate the appropriate values:
 
-Fetching credentials is covered in detail in the [getting started guide](https://discord.com/developers/docs/getting-started).
-
-> 🔑 Environment variables can be added to the `.env` file in Glitch or when developing locally, and in the Secrets tab in Replit (the lock icon on the left).
-
-### Install slash commands
-
-The commands for the example app are set up in `commands.js`. All of the commands in the `ALL_COMMANDS` array at the bottom of `commands.js` will be installed when you run the `register` command configured in `package.json`:
-
-```
-npm run register
+```text
+APP_ID=
+DISCORD_TOKEN=
+PUBLIC_KEY=
 ```
 
-### Run the app
+`DISCORD_TOKEN` is required for the current bot functionality.
 
-After your credentials are added, go ahead and run the app:
+`APP_ID` and `PUBLIC_KEY` are retained in the configuration structure for potential future Discord application functionality but are not currently required by the link-trimming bot.
 
-```
-node app.js
-```
+**Never commit your populated `.env` file or Discord bot token to source control.**
 
-> ⚙️ A package [like `nodemon`](https://github.com/remy/nodemon), which watches for local changes and restarts your app, may be helpful while locally developing.
+Start the bot with:
 
-If you aren't following the [getting started guide](https://discord.com/developers/docs/getting-started), you can move the contents of `examples/app.js` (the finished `app.js` file) to the top-level `app.js`.
-
-### Set up interactivity
-
-The project needs a public endpoint where Discord can send requests. To develop and test locally, you can use something like [`ngrok`](https://ngrok.com/) to tunnel HTTP traffic.
-
-Install ngrok if you haven't already, then start listening on port `3000`:
-
-```
-ngrok http 3000
+```bash
+npm start
 ```
 
-You should see your connection open:
+A successful connection will produce a console message similar to:
 
-```
-Tunnel Status                 online
-Version                       2.0/2.0
-Web Interface                 http://127.0.0.1:4040
-Forwarding                    https://1234-someurl.ngrok.io -> localhost:3000
-
-Connections                  ttl     opn     rt1     rt5     p50     p90
-                              0       0       0.00    0.00    0.00    0.00
+```text
+YT Tracker Trimmer is online as YT Tracker Trimmer#1234
 ```
 
-Copy the forwarding address that starts with `https`, in this case `https://1234-someurl.ngrok.io`, then go to your [app's settings](https://discord.com/developers/applications).
+## How It Works
 
-On the **General Information** tab, there will be an **Interactions Endpoint URL**. Paste your ngrok address there, and append `/interactions` to it (`https://1234-someurl.ngrok.io/interactions` in the example).
+YT Tracker Trimmer maintains a connection to the Discord Gateway and listens for new messages.
 
-Click **Save Changes**, and your app should be ready to run 🚀
+For each non-bot message, it:
 
-## Other resources
-- Read **[the documentation](https://discord.com/developers/docs/intro)** for in-depth information about API features.
-- Browse the `examples/` folder in this project for smaller, feature-specific code examples
-- Join the **[Discord Developers server](https://discord.gg/discord-developers)** to ask questions about the API, attend events hosted by the Discord API team, and interact with other devs.
-- Check out **[community resources](https://discord.com/developers/docs/topics/community-resources#community-resources)** for language-specific tools maintained by community members.
+1. Searches the message for HTTP/HTTPS URLs.
+2. Parses candidate URLs using JavaScript's `URL` API.
+3. Determines whether each URL belongs to a recognized YouTube domain.
+4. Checks for an `si` query parameter.
+5. Removes only the `si` parameter.
+6. Replies to the original Discord message with the cleaned URL.
+
+URL parsing and query-string modification are intentionally handled with the standard `URL`/`URLSearchParams` APIs rather than relying entirely on regular expressions.
+
+## Project Origins
+
+YT Tracker Trimmer was originally bootstrapped from Discord's **Getting Started** example application.
+
+The original example application's interaction-based demo functionality has been replaced by a `discord.js` Gateway bot designed specifically for YouTube link cleanup. The original `/test` and Rock-Paper-Scissors `/challenge` functionality are not part of YT Tracker Trimmer.
+
+Some superfluous remnants of the original Getting Started project may remain in the repository. These are retained either because they are harmless or have not yet warranted removal as the project continues to develop.
+
+The Git history for YT Tracker Trimmer begins with the standalone project rather than preserving the upstream example application's development history.
+
+## Security
+
+The Discord bot token should be treated as a password.
+
+The repository's `.gitignore` excludes:
+
+```text
+.env
+node_modules/
+```
+
+Secrets should be supplied through environment variables or the secret-management system of the deployment platform.
+
+YT Tracker Trimmer intentionally requests only the Discord permissions necessary for its operation. It does not require permission to delete messages, manage users, manage roles, or administer a server.
+
+## Author
+
+**Paladin045**
+
+## License
+
+MIT
