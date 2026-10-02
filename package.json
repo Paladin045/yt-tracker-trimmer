@@ -1,0 +1,19 @@
+{
+  "name": "yt-tracker-trimmer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Discord bot that removes unnecessary tracking/share parameters from YouTube links.",
+  "main": "app.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "scripts": {
+    "start": "node app.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.0.0",
+    "dotenv": "^16.0.0"
+  }
+}
